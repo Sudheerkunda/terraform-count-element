@@ -22,7 +22,7 @@ resource "aws_internet_gateway" "default" {
 }
 
 resource "aws_subnet" "subnets" {
-    count = 2
+    count = 2 #0,1
     vpc_id = "${aws_vpc.default.id}"
 	cidr_block = "${element(var.cidr, count.index)}"
     availability_zone = "${element(var.azs, count.index)}"
@@ -110,21 +110,22 @@ resource "aws_security_group" "allow_all" {
 # }
 
 
-# resource "aws_instance" "web-1" {
-#     ami = "${data.aws_ami.my_ami.id}"
-#     #ami = "ami-0d857ff0f5fc4e03b"
-#     availability_zone = "us-east-1a"
-#     instance_type = "t2.micro"
-#     key_name = "LaptopKey"
-#     subnet_id = "${aws_subnet.subnet1-public.id}"
-#     vpc_security_group_ids = ["${aws_security_group.allow_all.id}"]
-#     associate_public_ip_address = true	
-#     tags = {
-#         Name = "Server-1"
-#         Env = "Prod"
-#         Owner = "Sree"
-#     }
-# }
+resource "aws_instance" "web-1" {
+    count = 2
+    ami = "${lookup(var.amis, var.aws_region)}"
+    #ami = "ami-0d857ff0f5fc4e03b"
+    # availability_zone = "us-east-1a"
+    instance_type = "t2.micro"
+    key_name = "JANUARY-2020-KEY"
+    subnet_id = "${element(aws_subnet.subnets.*.id, count.index)}"
+    vpc_security_group_ids = ["${aws_security_group.allow_all.id}"]
+    associate_public_ip_address = true	
+    tags = {
+        Name = "Server-dev-${count.index+1}"
+        Env = "dev"
+        Owner = "sudheer"
+    }
+}
 
 #output "ami_id" {
 #  value = "${data.aws_ami.my_ami.id}"
